@@ -1,0 +1,1 @@
+INSERT INTO CASH_CARD(id, amount) VALUES (99, 123.45);
