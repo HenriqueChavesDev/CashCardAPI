@@ -85,12 +85,27 @@ class CashCardApplicationTests {
 
 	@Test
 	void shouldReturnAPageOfCashCards(){
-		ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/cashcards?page=0&size=1", String.class);
+		ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/cashcards?page=0&size=1&sort=amount,asc", String.class);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
 		DocumentContext documentContext = JsonPath.parse(response.getBody());
 		JSONArray page = documentContext.read("$[*]");
 		assertThat(page.size()).isEqualTo(1);
+		Double amount = documentContext.read("$[0].amount");
+		assertThat(amount).isEqualTo(1.00);
+	}
+
+	@Test
+	void shouldReturnASortedPageOfCashCardsWithNoParametersAndUseDefaultValues(){
+		ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/cashcards", String.class);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+		DocumentContext documentContext = JsonPath.parse(response.getBody());
+		JSONArray page = documentContext.read("$[*]");
+		assertThat(page.size()).isEqualTo(3);
+		JSONArray amounts = documentContext.read("$..amount");
+		assertThat(amounts).containsExactlyInAnyOrder(1.00, 123.45, 150.00);
 	}
 }
