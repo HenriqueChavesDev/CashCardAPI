@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,9 +23,14 @@ public class CashCardController {
     }
 
     @GetMapping("/{requestedId}")
-    public ResponseEntity<CashCard> findById(@PathVariable Long requestedId){
+    public ResponseEntity<CashCard> findById(@PathVariable Long requestedId, Principal principal){
 
-        Optional<CashCard> cashCardOptional = cashCardRepository.findById(requestedId);
+        Optional<CashCard> cashCardOptional = Optional.ofNullable(
+                cashCardRepository.findByIdAndOwner(
+                        requestedId,
+                        principal.getName()
+                )
+        );
         if (cashCardOptional.isPresent()) {
             return ResponseEntity.ok(cashCardOptional.get());
         }else {
@@ -33,15 +39,15 @@ public class CashCardController {
     }
 
     @PostMapping
-    private ResponseEntity createCashCard(@RequestBody CashCard newCashCard, UriComponentsBuilder ucb){
-        CashCard savedCashCard = cashCardRepository.save(newCashCard);
+    private ResponseEntity createCashCard(@RequestBody CashCard newCashCard, UriComponentsBuilder ucb, Principal principal){
+        CashCard savedCashCard = cashCardRepository.save(new CashCard(null, newCashCard.amount(), principal.getName()));
         URI locationOfNewCashCard = ucb.path("api/v1/cashcards/{id}").buildAndExpand(savedCashCard.id()).toUri();
         return ResponseEntity.created(locationOfNewCashCard).build();
     }
 
     @GetMapping
-    public ResponseEntity<List<CashCard>> findAll(Pageable pageable){
-        Page<CashCard> page = cashCardRepository.findAll(PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSortOr(Sort.by(Sort.Direction.ASC, "amount"))));
+    public ResponseEntity<List<CashCard>> findAll(Pageable pageable, Principal principal){
+        Page<CashCard> page = cashCardRepository.findByOwner(principal.getName(), PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSortOr(Sort.by(Sort.Direction.ASC, "amount"))));
 
         return ResponseEntity.ok(page.getContent());
     }
