@@ -3,11 +3,11 @@ package com.henriquechaves.cashcard;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
-public class CashcardApplication {
+@SpringBootApplication(scanBasePackages = "com.henriquechaves.cashcard")
+public class CashCardApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CashcardApplication.class, args);
+		SpringApplication.run(CashCardApplication.class, args);
 	}
 
 }
