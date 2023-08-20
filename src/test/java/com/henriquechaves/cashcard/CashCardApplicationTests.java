@@ -6,7 +6,10 @@ import net.minidev.json.JSONArray;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -15,17 +18,24 @@ import org.springframework.test.annotation.DirtiesContext;
 
 
 import java.net.URI;
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static  org.assertj.core.api.Assertions.assertThat;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class CashCardApplicationTests {
-
+	@TestConfiguration(proxyBeanMethods = false)
+	static class RestTemplateBuilderConfiguration {
+		@Bean
+		RestTemplateBuilder restTemplateBuilder() {
+			return new RestTemplateBuilder().setConnectTimeout(Duration.ofSeconds(1))
+					.setReadTimeout(Duration.ofSeconds(1));
+		}
+	}
 	@Autowired
-	TestRestTemplate restTemplate;
+	private TestRestTemplate restTemplate;
 	@Test
 	void shouldReturnACashCardWhenDataIsSaved(){
 		ResponseEntity<String> response = restTemplate.withBasicAuth("sarah1", "abc123").getForEntity("/api/v1/cashcards/99", String.class);
