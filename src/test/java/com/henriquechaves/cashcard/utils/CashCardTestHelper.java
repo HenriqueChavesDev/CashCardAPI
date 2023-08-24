@@ -1,12 +1,12 @@
 package com.henriquechaves.cashcard.utils;
 
-import com.henriquechaves.cashcard.dtos.CashCardOutputDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.henriquechaves.cashcard.entities.CashCard;
 
-import java.util.Arrays;
 import java.util.List;
 
-public class CashCardHelper {
+public class CashCardTestHelper {
     public static final List<CashCard> list = List.of(
             new CashCard(1L, 199.99, "henrique"),
             new CashCard(2L, 299.99, "henrique"),
@@ -20,4 +20,9 @@ public class CashCardHelper {
             new CashCard(10L, 1999.99, "henrique")
 
     );
+
+    public static String parseJsonTo(Object data) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(data);
+    }
 }
