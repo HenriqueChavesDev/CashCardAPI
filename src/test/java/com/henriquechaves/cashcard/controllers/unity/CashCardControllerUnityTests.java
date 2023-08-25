@@ -14,6 +14,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
+
+import java.util.Optional;
 
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -24,10 +27,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CashCardControllerUnityTests {
 
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     @MockBean
-    CashCardRepository cashCardRepository;
+    private CashCardRepository cashCardRepository;
 
     @Test
     void shouldBeReturnListOfCashCardsWithSuccess() throws Exception {
@@ -53,5 +56,41 @@ public class CashCardControllerUnityTests {
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
                 .andExpect(header().string("Location", "http://localhost/api/v1/cashcards/32"));
+    }
+
+    @Test
+    void shouldBeReturnOnlyOneCashCardWhenReceiveID() throws Exception {
+        var result = new CashCard(7L, 120.88, "henrique");
+        given(cashCardRepository.findById(anyLong())).willReturn(Optional.of(result));
+        mockMvc.perform(get("/api/v1/cashcards/7"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.id").value(7L));
+    }
+    @Test
+     void shouldResponseNotFoundWhenReceiveIdCashCardNotExist() throws Exception {
+        given(cashCardRepository.findById(222L)).willReturn(Optional.empty());
+        mockMvc.perform(get("/api/v1/cashcards/222"))
+                .andExpect(status().isNotFound());
+     }
+
+     @Test
+    void shouldDeleteCashCardByIdIsSuccess() throws Exception {
+         given(cashCardRepository.existsById(1L)).willReturn(true);
+         mockMvc.perform(delete("/api/v1/cashcards/1"))
+                .andExpect(status().isNoContent());
+
+         verify(cashCardRepository).existsById(1L);
+         verify(cashCardRepository).deleteById(1L);
+    }
+
+    @Test
+    void shouldDeleteCashCardByIdIsFail() throws Exception {
+        given(cashCardRepository.existsById(178L)).willReturn(false);
+        mockMvc.perform(delete("/api/v1/cashcards/178"))
+                .andExpect(status().isNotFound());
+
+        verify(cashCardRepository).existsById(178L);
+        verify(cashCardRepository, times(0)).deleteById(178L);
     }
 }
