@@ -2,6 +2,7 @@ package com.henriquechaves.cashcard.controllers;
 
 
 import com.henriquechaves.cashcard.dtos.CreateCashCardDTO;
+import com.henriquechaves.cashcard.dtos.UpdateCashCardDTO;
 import com.henriquechaves.cashcard.repositories.CashCardRepository;
 import com.henriquechaves.cashcard.entities.CashCard;
 import org.springframework.data.domain.Page;
@@ -59,4 +60,17 @@ public class CashCardController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    @PutMapping("{id}")
+    private ResponseEntity<Void> updateCashCard(@PathVariable Long id, @RequestBody UpdateCashCardDTO data) {
+        CashCard cashCard = new CashCard(id, data.amount(), data.owner());
+        boolean existsId = cashCardRepository.existsById(id);
+
+        if (existsId) {
+            cashCardRepository.save(cashCard);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
 }

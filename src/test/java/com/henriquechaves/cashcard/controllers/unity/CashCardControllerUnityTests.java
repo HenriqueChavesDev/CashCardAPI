@@ -93,4 +93,46 @@ public class CashCardControllerUnityTests {
         verify(cashCardRepository).existsById(178L);
         verify(cashCardRepository, times(0)).deleteById(178L);
     }
+
+    @Test
+    void shouldBeUpdatedCashCardWithSuccess() throws Exception {
+        var card = new CashCard(23L,239.99, "henrique");
+        var cardResult = new CashCard(23L,239.99, "henrique");
+        given(cashCardRepository.existsById(23L)).willReturn(true);
+        given(cashCardRepository.save(card)).willReturn(cardResult);
+        mockMvc.perform(put("/api/v1/cashcards/23")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CashCardTestHelper.parseJsonTo(card)))
+                .andExpect(status().isNoContent());
+
+        verify(cashCardRepository).existsById(anyLong());
+        verify(cashCardRepository).save(any(CashCard.class));
+    }
+
+    @Test
+    void shouldBeUpdatedCashCardIsFailWhenCashCardNotFound() throws Exception {
+        var card = new CashCard(100L,1239.99, "henrique");
+        given(cashCardRepository.existsById(100L)).willReturn(false);
+        mockMvc.perform(put("/api/v1/cashcards/100")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(CashCardTestHelper.parseJsonTo(card)))
+                .andExpect(status().isNotFound());
+
+        verify(cashCardRepository).existsById(anyLong());
+        verify(cashCardRepository, times(0)).save(any(CashCard.class));
+    }
+
+    @Test
+    void shouldBeUpdatedCashCardIsFailWhenRequestBodyIsEmpty() throws Exception {
+        mockMvc.perform(put("/api/v1/cashcards/100")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(""))
+                .andExpect(status().isBadRequest());
+
+        verify(cashCardRepository, times(0)).existsById(anyLong());
+        verify(cashCardRepository, times(0)).save(any(CashCard.class));
+    }
 }
